@@ -1,0 +1,33 @@
+# Create EKS Cluster
+
+eksctl create cluster --name=Eks-Cluster-with-Obersibility \
+                      --region=us-east-1 \
+                      --zones=us-east-1a,us-east-1b \
+                      --without-nodegroup
+                  
+eksctl utils associate-iam-oidc-provider \
+    --region us-east-1 \
+    --cluster Eks-Cluster-with-Obersibility \
+    --approve
+   
+eksctl create nodegroup --cluster=Eks-Cluster-with-Obersibility \
+                        --region=us-east-1 \
+                        --name=observability-ng-private \
+                        --node-type=t3.medium \
+                        --nodes-min=2 \
+                        --nodes-max=3 \
+                        --node-volume-size=20 \
+                        --managed \
+                        --asg-access \
+                        --external-dns-access \
+                        --full-ecr-access \
+                        --appmesh-access \
+                        --alb-ingress-access \
+                        --node-private-networking
+
+# Update ./kube/config file
+aws eks update-kubeconfig --name Eks-Cluster-with-Obersibility
+
+
+# Delete the EKS Cluster 
+eksctl delete cluster --name Eks-Cluster-with-Obersibility
